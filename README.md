@@ -1,94 +1,69 @@
-# urnas-tardias
+# Urnas tardias — dashboard
 
-Quantos votos entraram depois das 17h no 2º turno de 2026 (25/10), quando o STF estendeu a votação até as 19h.
+Dashboard interativo para explorar quantos votos foram computados **depois das 17h** no 2º turno de 2026 (25/10), nas urnas que encerraram após as **17h45** (horário de Brasília), quando a votação foi estendida até as 19h.
 
-![card](card.png)
+Desenvolvido por **Jonnes Santos** (Arquiteto de Software).
 
-## Resultado (sem o exterior)
+## O que este projeto faz
 
-| | |
-|---|---|
-| Urnas no país | 497.882 |
-| Urnas estendidas (encerraram depois das 17h45) | 7.352 (1,48%) |
-| Votos depois das 17h nessas urnas | 5.052 |
-| Votos registrados nas urnas | 127.696.482 |
-| Peso dos votos tardios | 0,004% |
-| Vantagem de Lula sobre Flávio | 4.430.191 (votos tardios = 0,11%) |
+- Visualiza KPIs nacionais e por filtro (UF / município)
+- Gráficos de urnas estendidas por estado, horário de encerramento e ranking de municípios
+- Permite baixar o CSV filtrado das seções
+- Roda localmente ou no [Streamlit Community Cloud](https://share.streamlit.io)
 
-| UF | Urnas estendidas | Votos depois das 17h |
-|---|---|---|
-| RJ | 3.301 (8,8%) | 1.966 |
-| SP | 1.874 (1,8%) | 1.626 |
-| BA | 1.014 (2,9%) | 842 |
-| PE | 705 (3,3%) | 296 |
-| PB | 312 (2,9%) | 140 |
-| Demais | 146 | 182 |
+Os números agregados (sem exterior): cerca de **7,3 mil** urnas estendidas (~1,5%) e **~5 mil** votos após as 17h nessas urnas — ordem de grandeza irrelevante frente à diferença nacional da eleição. O detalhe por UF/município fica no dashboard.
 
-### Outros horários de corte
+## Como rodar localmente
 
-| Urna estendida se encerrou depois de | Urnas | Votos depois das 17h | % da vantagem de Lula |
-|---|---|---|---|
-| 17h45 (padrão) | 7.352 (1,48%) | 5.052 | 0,11% |
-| 17h30 | 7.606 (1,53%) | 5.139 | 0,12% |
-| 17h15 | 9.079 (1,82%) | 5.621 | 0,13% |
-| 17h (todas as urnas) | 497.882 (100%) | 34.330 | 0,77% |
-
-Com corte às 17h entram todas as urnas, e a maior parte desses votos vem de eleitores que já estavam na fila às 17h, o que é permitido em qualquer eleição.
-
-## Método
-
-Os dados vêm do log de cada urna (`logd.dat`), publicado pelo TSE em `resultados.tse.jus.br`. Exemplo com a seção 0517 da zona 0009 do Rio de Janeiro (código do município 60011):
-
-1. A lista de seções de cada UF está no arquivo de configuração:
-   https://resultados.tse.jus.br/oficial/ele2026/arquivo-urna/3221/config/rj/rj-p003221-cs.json
-2. O arquivo auxiliar da seção traz o `hash` da pasta onde estão os arquivos da urna:
-   https://resultados.tse.jus.br/oficial/ele2026/arquivo-urna/3221/dados/rj/60011/0009/0517/p003221-rj-m60011-z0009-s0517-aux.json
-3. O log fica em `dados/{uf}/{municipio}/{zona}/{secao}/{hash}/{arquivo -log.jez}`:
-   https://resultados.tse.jus.br/oficial/ele2026/arquivo-urna/3221/dados/rj/60011/0009/0517/55454d6e504a34786275774b4d6c55696b4b6132756255506e725333432d36544e357a69776b544f31656b3d/o03221rj6001100090517-log.jez
-
-O `.jez` é um zip com o `logd.dat`, um texto em latin1 separado por tab, com os dois turnos. Trecho dessa urna:
-
-```
-25/10/2026 08:00:01	INFO	01781484	VOTA	Urna pronta para receber votos	D732412B4E99352D
-25/10/2026 18:15:22	INFO	01781484	VOTA	O voto do eleitor foi computado	258C2ED24D7644FC
-25/10/2026 19:00:45	INFO	01781484	VOTA	Procedimento de encerramento confirmado	2EC37A3B98BF6D60
-```
-
-Para cada seção, usamos só as linhas de 25/10/2026:
-
-- **abertura**: evento "Urna pronta para receber votos"
-- **encerramento**: evento "Procedimento de encerramento confirmado"
-- **votos**: evento "O voto do eleitor foi computado"
-
-Os horários do log são locais. O fuso de cada município é o mais comum entre as horas de abertura das suas urnas (abertura às 8h locais), e tudo é convertido para o horário de Brasília.
-
-Uma urna é **estendida** se encerrou depois das 17h45 de Brasília. Nelas, contam-se os votos computados depois das 17h. O exterior (`ZZ`) fica de fora porque lá a votação segue a hora local de cada país.
-
-Cobertura: 499.248 seções no arquivo de configuração do TSE; 72 sem log (70 no exterior).
-
-## Rodar
+Pré-requisitos: Python 3.10+ e [`uv`](https://docs.astral.sh/uv/).
 
 ```sh
-uv run crawl.py          # todas as UFs, ou: uv run crawl.py rj sp
-python3 analisa.py       # gera secoes.csv e municipios.csv
-uv run dashboard.py      # dashboard local em http://localhost:8501
+git clone https://github.com/Jonnes-Santos/urnas-tardias.git
+cd urnas-tardias
+uv run dashboard.py
 ```
 
-O crawler limita a taxa (`RPS`, padrão 10 req/s) e retoma de onde parou. São ~1 milhão de requisições; numa conexão doméstica leva horas.
+Abre em `http://localhost:8501`.
 
-O dashboard lê `secoes.csv` e `municipios.csv` (o `uv` instala Streamlit/pandas/plotly na primeira vez).
+O app lê `secoes.csv` e `municipios.csv` (já versionados). A pasta `dados/` (logs brutos) **não** entra no Git.
 
-## Deploy (Streamlit Community Cloud)
+### Atualizar / regenerar os CSVs (opcional)
 
-1. Suba o código para um repositório **seu** no GitHub (fork de `apolinario/urnas-tardias` ou repo novo), incluindo `dashboard.py`, `requirements.txt`, `secoes.csv` e `municipios.csv`.
-2. Em [share.streamlit.io](https://share.streamlit.io) → **New app**
-3. Conecte o GitHub e escolha o repo / branch
-4. **Main file path:** `dashboard.py`
-5. Deploy
+```sh
+uv run crawl.py              # todas as UFs — ou: uv run crawl.py rj sp
+python3 analisa.py           # regenera secoes.csv e municipios.csv
+```
 
-Não versionar a pasta `dados/` (logs brutos); o app usa só os CSVs.
+O crawler limita requisições ao TSE (`RPS`, padrão 10/s) e retoma de onde parou. São centenas de milhares de downloads; em conexão doméstica leva horas.
 
-## Arquivos
+## Deploy no Streamlit Cloud
 
-- `secoes.csv`: uma linha por urna (fuso, abertura, encerramento, último voto, votos depois das 17h e das 17h20, total de votos, classe)
-- `municipios.csv`: municípios com urnas estendidas
+1. Abra [share.streamlit.io](https://share.streamlit.io) e autentique com GitHub
+2. **New app** → repositório `Jonnes-Santos/urnas-tardias`, branch `master`
+3. **Main file path:** `dashboard.py`
+4. Deploy
+
+Dependências em `requirements.txt` (`streamlit`, `pandas`, `plotly`).
+
+## Arquivos principais
+
+| Arquivo | Função |
+|---------|--------|
+| `dashboard.py` | Interface Streamlit |
+| `secoes.csv` | Uma linha por urna (horários, votos tardios, classe) |
+| `municipios.csv` | Municípios com urnas estendidas |
+| `crawl.py` / `analisa.py` | Coleta dos logs do TSE e consolidação em CSV |
+| `requirements.txt` | Dependências do dashboard |
+
+## Critério usado na análise
+
+- Fonte: logs de urna (`logd.dat`) publicados pelo TSE
+- **Urna estendida:** encerramento depois das 17h45 (Brasília)
+- **Votos tardios:** computados depois das 17h, apenas nessas urnas
+- Exterior (`ZZ`) excluído (fuso por país)
+- Fusos municipais inferidos pela hora típica de abertura (8h locais)
+
+## Créditos
+
+Pipeline original de coleta/análise dos logs do TSE: [apolinario/urnas-tardias](https://github.com/apolinario/urnas-tardias).  
+Este repositório adiciona o dashboard, a experiência de navegação e o empacotamento para deploy.
