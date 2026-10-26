@@ -19,10 +19,10 @@ Os números agregados (sem exterior): cerca de **7,3 mil** urnas estendidas (~1,
 
 1. **Extensão:** horário normal 17h; naquele domingo foi até 19h.
 2. **Urna estendida:** no log, encerramento **depois das 17h45** (Brasília). Não há campo “reabriu por ordem do ministro”; o horário de fechamento é o critério. O 17h45 evita contar atraso pequeno.
-3. **Dois números:**
-   - **~5 mil** = votos após 17h **só** nas urnas estendidas ← número deste projeto.
-   - **~35 mil** = votos após 17h em **todas** as urnas (inclui fila que já estava lá às 17h, regra antiga).
-4. **Card “Urnas no filtro”** = todas as seções do filtro (ex. Brasil ≈ 498 mil). Os destaques de voto tardio são o subconjunto estendido.
+3. **Dois cards no painel:**
+   - **Verde (~35 mil):** votos após 17h em **todas** as urnas (inclui fila às 17h).
+   - **Laranja (~5 mil):** votos após 17h **só** nas urnas estendidas ← recorte da extensão.
+4. **Card “Urnas no filtro”** = todas as seções do filtro (ex. Brasil ≈ 498 mil).
 
 No app: **“Entenda os números (leitura para leigo)”**.
 

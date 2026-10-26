@@ -208,6 +208,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
   height: 100%;
 }
 .kpi.accent { border-left-color: #E65100; }
+.kpi.teal { border-left-color: #00897B; }
 .kpi .label {
   font-size: 0.68rem;
   font-weight: 500;
@@ -353,8 +354,12 @@ def fmt_int(n: float | int) -> str:
     return f"{int(n):,}".replace(",", ".")
 
 
-def kpi(label: str, value: str, hint: str = "", accent: bool = False) -> str:
-    cls = "kpi accent" if accent else "kpi"
+def kpi(label: str, value: str, hint: str = "", tone: str = "") -> str:
+    cls = "kpi"
+    if tone == "accent":
+        cls += " accent"
+    elif tone == "teal":
+        cls += " teal"
     hint_html = f'<div class="hint">{hint}</div>' if hint else ""
     return f'<div class="{cls}"><div class="label">{label}</div><div class="value">{value}</div>{hint_html}</div>'
 
@@ -520,29 +525,41 @@ def main() -> None:
         return
 
     est = base[base["classe"] == "estendida"]
-    votos_tarde = int(est["votos_apos_17h"].sum())
+    votos_17_est = int(est["votos_apos_17h"].sum())
+    votos_17_todas = int(base["votos_apos_17h"].sum())
     urnas_c_voto = int((est["votos_apos_17h"] > 0).sum())
     pct_est = 100 * len(est) / len(base) if len(base) else 0
     votos_tot = int(base["votos_total"].sum())
-    peso = 100 * votos_tarde / votos_tot if votos_tot else 0
+    peso_est = 100 * votos_17_est / votos_tot if votos_tot else 0
+    peso_todas = 100 * votos_17_todas / votos_tot if votos_tot else 0
 
-    # KPIs: 2x2 no mobile; em desktop largo as 4 colunas se expandem via CSS
+    # KPIs em pares (mobile-friendly)
     k1, k2 = st.columns(2)
     k1.markdown(
         kpi("Urnas no filtro", fmt_int(len(base)), f"{fmt_int(votos_tot)} votos registrados"),
         unsafe_allow_html=True,
     )
     k2.markdown(
-        kpi("Urnas estendidas", fmt_int(len(est)), f"{pct_est:.1f}% das urnas"),
+        kpi("Urnas estendidas", fmt_int(len(est)), f"{pct_est:.1f}% das urnas · fecharam após 17h45"),
         unsafe_allow_html=True,
     )
     k3, k4 = st.columns(2)
     k3.markdown(
-        kpi("Com voto após 17h", fmt_int(urnas_c_voto), "entre as estendidas", accent=True),
+        kpi(
+            "Votos após 17h (todas as urnas)",
+            fmt_int(votos_17_todas),
+            f"{peso_todas:.4f}% do total · inclui fila às 17h",
+            tone="teal",
+        ),
         unsafe_allow_html=True,
     )
     k4.markdown(
-        kpi("Votos após 17h", fmt_int(votos_tarde), f"{peso:.4f}% do total no filtro", accent=True),
+        kpi(
+            "Votos após 17h (só estendidas)",
+            fmt_int(votos_17_est),
+            f"{peso_est:.4f}% do total · {fmt_int(urnas_c_voto)} seções com voto",
+            tone="accent",
+        ),
         unsafe_allow_html=True,
     )
 
@@ -551,10 +568,10 @@ def main() -> None:
             """
 <div class="explain">
   <h3>Em uma frase</h3>
-  <p>Este painel responde:
-  <strong>“Depois da extensão do horário, quantos votos entraram após as 17h
-  nas seções que fecharam bem mais tarde?”</strong>
-  A resposta no Brasil é cerca de <span class="num">5 mil</span> — não 35 mil.</p>
+  <p>Os dois cards coloridos respondem perguntas diferentes.
+  O <strong>verde</strong> é “voto depois das 17h em qualquer urna”.
+  O <strong>laranja</strong> é “voto depois das 17h só nas urnas que fecharam tarde”
+  (ligadas à extensão do horário).</p>
 
   <h3>1) O que foi a extensão</h3>
   <p>Normalmente a votação fecha às <strong>17h</strong>. Naquele domingo
@@ -569,30 +586,24 @@ def main() -> None:
   <p>Usamos 17h45 (e não 17h) para não contar seção que só demorou uns minutos
   a mais para fechar a porta.</p>
 
-  <h3>3) Os dois números que as pessoas confundem</h3>
-  <p><strong>Pergunta A (este painel):</strong>
-  Nas urnas estendidas, quantos votos foram registrados <strong>depois das 17h</strong>?
-  → cerca de <span class="num">5 mil</span>.
-  É o card laranja <em>Votos após 17h</em>.</p>
-  <p><strong>Pergunta B (outra conta):</strong>
-  Em <em>todas</em> as urnas do Brasil, quantos votos depois das 17h?
-  → cerca de <span class="num">35 mil</span>.
-  Aqui entra muita gente que <strong>já estava na fila às 17h</strong>
-  e votou um pouco depois — isso já acontecia em eleições sem extensão até 19h.</p>
-  <p>Resumo: <strong>5 mil</strong> = efeito nas seções que fecharam tarde.
-  <strong>35 mil</strong> = “qualquer voto após 17h em qualquer urna”.
-  Não são a mesma coisa.</p>
+  <h3>3) Card verde × card laranja</h3>
+  <p><strong>Verde — Votos após 17h (todas as urnas):</strong>
+  no Brasil ≈ <span class="num">35 mil</span>.
+  Inclui quem <strong>já estava na fila às 17h</strong> e votou um pouco depois
+  (isso já existia em eleições sem extensão até 19h).</p>
+  <p><strong>Laranja — Votos após 17h (só estendidas):</strong>
+  no Brasil ≈ <span class="num">5 mil</span>.
+  Só nas seções que fecharam depois das 17h45 — o recorte da extensão.</p>
+  <p>Por isso os números não batem: não são a mesma pergunta.</p>
 
-  <h3>4) Os cards azuis vs o laranja</h3>
-  <p><strong>Urnas no filtro</strong> (azul) = quantas seções existem no que você
-  filtrou (ex.: Brasil inteiro ≈ 498 mil). Não é “só as tardias”.</p>
-  <p><strong>Urnas estendidas / votos após 17h</strong> = o pedaço “fechou tarde”
-  e os votos depois das 17h <em>só nesse pedaço</em>.</p>
+  <h3>4) Os cards azuis</h3>
+  <p><strong>Urnas no filtro</strong> = todas as seções do que você escolheu
+  (ex.: Brasil ≈ 498 mil).</p>
+  <p><strong>Urnas estendidas</strong> = quantas dessas fecharam depois das 17h45.</p>
 </div>
 """,
             unsafe_allow_html=True,
         )
-
     # Gráficos empilhados em largura total (melhor no mobile e maiores no desktop)
     por_uf = (
         base.assign(estendida=base["classe"].eq("estendida"))
