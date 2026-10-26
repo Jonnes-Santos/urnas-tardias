@@ -11,7 +11,18 @@ Desenvolvido por **Jonnes Santos** (Arquiteto de Software).
 - Permite baixar o CSV filtrado das seções
 - Roda localmente ou no [Streamlit Community Cloud](https://share.streamlit.io)
 
-Os números agregados (sem exterior): cerca de **7,3 mil** urnas estendidas (~1,5%) e **~5 mil** votos após as 17h nessas urnas — ordem de grandeza irrelevante frente à diferença nacional da eleição. O detalhe por UF/município fica no dashboard.
+Os números agregados (sem exterior): cerca de **7,3 mil** urnas estendidas (~1,5%) e **~5 mil** votos após as 17h nessas urnas — ordem de grandeza pequena frente à diferença nacional da eleição. O detalhe por UF/município fica no dashboard.
+
+## Entenda os números (para leigo)
+
+No 2º turno a votação ia, em regra, até às **17h**. Com a extensão até às **19h**, parte das seções fechou mais tarde.
+
+Este projeto **não** tem no log um campo “reabriu por ordem do ministro”. Usa um critério verificável: urna **estendida** = confirmou encerramento **depois das 17h45** (Brasília). O corte em 17h45 evita misturar atraso pequeno de fechamento.
+
+- **~5 mil votos:** computados depois das 17h **só** nessas urnas estendidas — recorte ligado à extensão do horário (é o número principal do dashboard).
+- **~35 mil votos:** se contar voto após 17h em **todas** as urnas. Inclui muita fila que já existia às 17h (permitido em eleições sem extensão até 19h). É outra pergunta.
+
+No app, abra **“Entenda os números (leitura para leigo)”** para o mesmo texto.
 
 ## Como rodar localmente
 

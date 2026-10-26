@@ -154,6 +154,31 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
 @media (min-width: 768px) {
   .mobile-tip { display: none !important; }
 }
+.explain {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 5px solid #00897B;
+  border-radius: 8px;
+  padding: 1rem 1.1rem 1.05rem;
+  margin: 0.85rem 0 1rem;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.explain h3 {
+  margin: 0 0 0.55rem !important;
+  font-size: 1.05rem !important;
+  color: #0B1F33 !important;
+  font-weight: 700 !important;
+}
+.explain p { margin: 0 0 0.55rem !important; }
+.explain p:last-child { margin-bottom: 0 !important; }
+.explain strong { color: #0B1F33; }
+.explain .num { color: #E65100; font-weight: 700; }
+@media (min-width: 768px) {
+  .explain { font-size: 0.95rem; padding: 1.15rem 1.35rem; }
+  .explain h3 { font-size: 1.12rem !important; }
+}
 .chart-head {
   margin: 1rem 0 0.35rem;
 }
@@ -520,6 +545,38 @@ def main() -> None:
         kpi("Votos após 17h", fmt_int(votos_tarde), f"{peso:.4f}% do total no filtro", accent=True),
         unsafe_allow_html=True,
     )
+
+    with st.expander("Entenda os números (leitura para leigo)", expanded=False):
+        st.markdown(
+            """
+<div class="explain">
+  <h3>O que aconteceu no 2º turno</h3>
+  <p>No dia 25/10/2026 a votação, em regra, ia até às <strong>17h</strong>.
+  Com a decisão que <strong>estendeu o horário até às 19h</strong>, algumas seções
+  continuaram recebendo eleitores depois do horário normal.</p>
+  <h3>O que este painel chama de “urna estendida”</h3>
+  <p>Não existe no log da urna um botão escrito “reabriu por ordem do ministro”.
+  Por isso usamos um critério simples e verificável: se a urna
+  <strong>confirmou o encerramento depois das 17h45</strong> (horário de Brasília),
+  ela entra no grupo das <strong>estendidas</strong>. O corte em 17h45
+  (e não 17h em ponto) evita misturar seções que só atrasaram um pouquinho o fechamento.</p>
+  <h3>Por que o destaque é ~5 mil e não ~35 mil?</h3>
+  <p>O card laranja <strong>Votos após 17h</strong> — em geral na casa dos
+  <span class="num">5 mil</span> no Brasil — conta votos
+  <strong>computados depois das 17h</strong> <em>somente</em> nas urnas que
+  fecharam depois das 17h45. É o recorte ligado à extensão do horário.</p>
+  <p>Se alguém somar voto após 17h em <strong>todas</strong> as urnas do país,
+  o total sobe para cerca de <span class="num">35 mil</span>. Isso inclui muita
+  gente que <strong>já estava na fila às 17h</strong> — regra antiga de eleição,
+  mesmo sem extensão até 19h. São perguntas diferentes; por isso os números não batem.</p>
+  <h3>Como ler os cards</h3>
+  <p><strong>Urnas no filtro</strong> = todas as seções do que você escolheu
+  (Brasil, um estado, um município…). Os gráficos e o “votos após 17h” em destaque
+  falam do subconjunto <strong>estendido</strong>, foco desta análise.</p>
+</div>
+""",
+            unsafe_allow_html=True,
+        )
 
     # Gráficos empilhados em largura total (melhor no mobile e maiores no desktop)
     por_uf = (
