@@ -71,9 +71,22 @@ Cobertura: 499.248 seções no arquivo de configuração do TSE; 72 sem log (70 
 ```sh
 uv run crawl.py          # todas as UFs, ou: uv run crawl.py rj sp
 python3 analisa.py       # gera secoes.csv e municipios.csv
+uv run dashboard.py      # dashboard local em http://localhost:8501
 ```
 
 O crawler limita a taxa (`RPS`, padrão 10 req/s) e retoma de onde parou. São ~1 milhão de requisições; numa conexão doméstica leva horas.
+
+O dashboard lê `secoes.csv` e `municipios.csv` (o `uv` instala Streamlit/pandas/plotly na primeira vez).
+
+## Deploy (Streamlit Community Cloud)
+
+1. Suba o código para um repositório **seu** no GitHub (fork de `apolinario/urnas-tardias` ou repo novo), incluindo `dashboard.py`, `requirements.txt`, `secoes.csv` e `municipios.csv`.
+2. Em [share.streamlit.io](https://share.streamlit.io) → **New app**
+3. Conecte o GitHub e escolha o repo / branch
+4. **Main file path:** `dashboard.py`
+5. Deploy
+
+Não versionar a pasta `dados/` (logs brutos); o app usa só os CSVs.
 
 ## Arquivos
 
