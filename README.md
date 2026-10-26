@@ -15,14 +15,16 @@ Os números agregados (sem exterior): cerca de **7,3 mil** urnas estendidas (~1,
 
 ## Entenda os números (para leigo)
 
-No 2º turno a votação ia, em regra, até às **17h**. Com a extensão até às **19h**, parte das seções fechou mais tarde.
+**Em uma frase:** o painel pergunta *“nas seções que fecharam bem mais tarde por causa da extensão até 19h, quantos votos entraram depois das 17h?”* → cerca de **5 mil**, não 35 mil.
 
-Este projeto **não** tem no log um campo “reabriu por ordem do ministro”. Usa um critério verificável: urna **estendida** = confirmou encerramento **depois das 17h45** (Brasília). O corte em 17h45 evita misturar atraso pequeno de fechamento.
+1. **Extensão:** horário normal 17h; naquele domingo foi até 19h.
+2. **Urna estendida:** no log, encerramento **depois das 17h45** (Brasília). Não há campo “reabriu por ordem do ministro”; o horário de fechamento é o critério. O 17h45 evita contar atraso pequeno.
+3. **Dois números:**
+   - **~5 mil** = votos após 17h **só** nas urnas estendidas ← número deste projeto.
+   - **~35 mil** = votos após 17h em **todas** as urnas (inclui fila que já estava lá às 17h, regra antiga).
+4. **Card “Urnas no filtro”** = todas as seções do filtro (ex. Brasil ≈ 498 mil). Os destaques de voto tardio são o subconjunto estendido.
 
-- **~5 mil votos:** computados depois das 17h **só** nessas urnas estendidas — recorte ligado à extensão do horário (é o número principal do dashboard).
-- **~35 mil votos:** se contar voto após 17h em **todas** as urnas. Inclui muita fila que já existia às 17h (permitido em eleições sem extensão até 19h). É outra pergunta.
-
-No app, abra **“Entenda os números (leitura para leigo)”** para o mesmo texto.
+No app: **“Entenda os números (leitura para leigo)”**.
 
 ## Como rodar localmente
 

@@ -546,33 +546,48 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    with st.expander("Entenda os números (leitura para leigo)", expanded=False):
+    with st.expander("Entenda os números (leitura para leigo)", expanded=True):
         st.markdown(
             """
 <div class="explain">
-  <h3>O que aconteceu no 2º turno</h3>
-  <p>No dia 25/10/2026 a votação, em regra, ia até às <strong>17h</strong>.
-  Com a decisão que <strong>estendeu o horário até às 19h</strong>, algumas seções
-  continuaram recebendo eleitores depois do horário normal.</p>
-  <h3>O que este painel chama de “urna estendida”</h3>
-  <p>Não existe no log da urna um botão escrito “reabriu por ordem do ministro”.
-  Por isso usamos um critério simples e verificável: se a urna
-  <strong>confirmou o encerramento depois das 17h45</strong> (horário de Brasília),
-  ela entra no grupo das <strong>estendidas</strong>. O corte em 17h45
-  (e não 17h em ponto) evita misturar seções que só atrasaram um pouquinho o fechamento.</p>
-  <h3>Por que o destaque é ~5 mil e não ~35 mil?</h3>
-  <p>O card laranja <strong>Votos após 17h</strong> — em geral na casa dos
-  <span class="num">5 mil</span> no Brasil — conta votos
-  <strong>computados depois das 17h</strong> <em>somente</em> nas urnas que
-  fecharam depois das 17h45. É o recorte ligado à extensão do horário.</p>
-  <p>Se alguém somar voto após 17h em <strong>todas</strong> as urnas do país,
-  o total sobe para cerca de <span class="num">35 mil</span>. Isso inclui muita
-  gente que <strong>já estava na fila às 17h</strong> — regra antiga de eleição,
-  mesmo sem extensão até 19h. São perguntas diferentes; por isso os números não batem.</p>
-  <h3>Como ler os cards</h3>
-  <p><strong>Urnas no filtro</strong> = todas as seções do que você escolheu
-  (Brasil, um estado, um município…). Os gráficos e o “votos após 17h” em destaque
-  falam do subconjunto <strong>estendido</strong>, foco desta análise.</p>
+  <h3>Em uma frase</h3>
+  <p>Este painel responde:
+  <strong>“Depois da extensão do horário, quantos votos entraram após as 17h
+  nas seções que fecharam bem mais tarde?”</strong>
+  A resposta no Brasil é cerca de <span class="num">5 mil</span> — não 35 mil.</p>
+
+  <h3>1) O que foi a extensão</h3>
+  <p>Normalmente a votação fecha às <strong>17h</strong>. Naquele domingo
+  o horário foi estendido até às <strong>19h</strong>. Algumas seções
+  realmente ficaram abertas (ou encerraram) bem depois das 17h.</p>
+
+  <h3>2) Como achamos essas seções no computador</h3>
+  <p>O arquivo da urna não diz “esta seção reabriu por causa do ministro”.
+  Então usamos o horário de <strong>encerramento</strong> do log:</p>
+  <p>Se fechou <strong>depois das 17h45</strong> → chamamos de
+  <strong>urna estendida</strong> (são umas 7 mil no país).</p>
+  <p>Usamos 17h45 (e não 17h) para não contar seção que só demorou uns minutos
+  a mais para fechar a porta.</p>
+
+  <h3>3) Os dois números que as pessoas confundem</h3>
+  <p><strong>Pergunta A (este painel):</strong>
+  Nas urnas estendidas, quantos votos foram registrados <strong>depois das 17h</strong>?
+  → cerca de <span class="num">5 mil</span>.
+  É o card laranja <em>Votos após 17h</em>.</p>
+  <p><strong>Pergunta B (outra conta):</strong>
+  Em <em>todas</em> as urnas do Brasil, quantos votos depois das 17h?
+  → cerca de <span class="num">35 mil</span>.
+  Aqui entra muita gente que <strong>já estava na fila às 17h</strong>
+  e votou um pouco depois — isso já acontecia em eleições sem extensão até 19h.</p>
+  <p>Resumo: <strong>5 mil</strong> = efeito nas seções que fecharam tarde.
+  <strong>35 mil</strong> = “qualquer voto após 17h em qualquer urna”.
+  Não são a mesma coisa.</p>
+
+  <h3>4) Os cards azuis vs o laranja</h3>
+  <p><strong>Urnas no filtro</strong> (azul) = quantas seções existem no que você
+  filtrou (ex.: Brasil inteiro ≈ 498 mil). Não é “só as tardias”.</p>
+  <p><strong>Urnas estendidas / votos após 17h</strong> = o pedaço “fechou tarde”
+  e os votos depois das 17h <em>só nesse pedaço</em>.</p>
 </div>
 """,
             unsafe_allow_html=True,
