@@ -154,16 +154,46 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
 @media (min-width: 768px) {
   .mobile-tip { display: none !important; }
 }
+/* Expanders da área principal — fundo sólido (não transparente) */
+.main div[data-testid="stExpander"] {
+  background: #FFFFFF !important;
+  border: 1px solid #C5D0D8 !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+.main div[data-testid="stExpander"] details {
+  background: #FFFFFF !important;
+}
+.main div[data-testid="stExpander"] summary,
+.main div[data-testid="stExpander"] summary span,
+.main div[data-testid="stExpander"] summary p {
+  background: #E8F5F3 !important;
+  color: #0B1F33 !important;
+  font-weight: 700 !important;
+}
+.main div[data-testid="stExpander"] summary {
+  border-bottom: 1px solid #B2DFDB;
+}
+.main div[data-testid="stExpander"] summary:hover {
+  background: #D7EFEA !important;
+}
+.main div[data-testid="stExpander"] [data-testid="stExpanderDetails"],
+.main div[data-testid="stExpander"] .streamlit-expanderContent {
+  background: #F7FBFA !important;
+}
+
 .explain {
-  background: #FFFFFF;
-  border: 1px solid #E2E8F0;
+  background: #FFFFFF !important;
+  border: 1px solid #D0DCE3;
   border-left: 5px solid #00897B;
   border-radius: 8px;
   padding: 1rem 1.1rem 1.05rem;
-  margin: 0.85rem 0 1rem;
+  margin: 0.35rem 0 0.25rem;
   color: #334155;
   font-size: 0.92rem;
   line-height: 1.5;
+  box-shadow: 0 1px 2px rgba(11, 31, 51, 0.06);
 }
 .explain h3 {
   margin: 0 0 0.55rem !important;
@@ -171,7 +201,7 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
   color: #0B1F33 !important;
   font-weight: 700 !important;
 }
-.explain p { margin: 0 0 0.55rem !important; }
+.explain p { margin: 0 0 0.55rem !important; color: #334155 !important; }
 .explain p:last-child { margin-bottom: 0 !important; }
 .explain strong { color: #0B1F33; }
 .explain .num { color: #E65100; font-weight: 700; }
