@@ -563,7 +563,7 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
-    with st.expander("Entenda os números (leitura para leigo)", expanded=True):
+    with st.expander("Entenda os números (leitura para leigo)", expanded=False):
         st.markdown(
             """
 <div class="explain">
