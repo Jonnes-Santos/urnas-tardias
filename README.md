@@ -24,6 +24,17 @@ Quantos votos entraram depois das 17h no 2º turno de 2026 (25/10), quando o STF
 | PB | 312 (2,9%) | 140 |
 | Demais | 146 | 182 |
 
+### Outros horários de corte
+
+| Urna estendida se encerrou depois de | Urnas | Votos depois das 17h | % da vantagem de Lula |
+|---|---|---|---|
+| 17h45 (padrão) | 7.352 (1,48%) | 5.052 | 0,11% |
+| 17h30 | 7.606 (1,53%) | 5.139 | 0,12% |
+| 17h15 | 9.079 (1,82%) | 5.621 | 0,13% |
+| 17h (todas as urnas) | 497.882 (100%) | 34.330 | 0,77% |
+
+Com corte às 17h entram todas as urnas, e a maior parte desses votos vem de eleitores que já estavam na fila às 17h, o que é permitido em qualquer eleição.
+
 ## Método
 
 Os dados vêm do log de cada urna (`logd.dat`), publicado pelo TSE em `resultados.tse.jus.br`. Exemplo com a seção 0517 da zona 0009 do Rio de Janeiro (código do município 60011):
