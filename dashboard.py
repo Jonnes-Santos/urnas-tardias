@@ -140,6 +140,38 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
   margin: 0.35rem 0 0;
   line-height: 1.45;
 }
+.mobile-tip {
+  display: block;
+  margin: 0.65rem 0 0.85rem;
+  padding: 0.65rem 0.85rem;
+  background: #E3F2FD;
+  border: 1px solid #90CAF9;
+  border-radius: 8px;
+  color: #0D47A1;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+@media (min-width: 768px) {
+  .mobile-tip { display: none !important; }
+}
+.chart-head {
+  margin: 1rem 0 0.35rem;
+}
+.chart-head h3 {
+  margin: 0 !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #0B1F33 !important;
+  line-height: 1.3 !important;
+  border: none !important;
+  padding: 0 !important;
+}
+.chart-head p {
+  margin: 0.2rem 0 0 !important;
+  font-size: 0.82rem !important;
+  color: #64748B !important;
+  line-height: 1.35 !important;
+}
 
 .kpi {
   background: #FFFFFF;
@@ -210,18 +242,12 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
   opacity: 1 !important;
   font-weight: 700 !important;
 }
-.js-plotly-plot .ytick text { font-size: 12px !important; }
+.js-plotly-plot .ytick text { font-size: 11px !important; }
 .js-plotly-plot { width: 100% !important; }
-
-/* Mobile: modebar não cobre o título */
-.js-plotly-plot .modebar-container {
-  top: auto !important;
-  bottom: 4px !important;
-  right: 4px !important;
-}
-.js-plotly-plot .gtitle {
-  transform: translateY(4px) !important;
-}
+/* Mobile: esconde toolbar do Plotly (zoom/pan confunde o toque) */
+.js-plotly-plot .modebar-container { display: none !important; }
+/* Evita arrastar o gráfico no scroll do celular */
+.js-plotly-plot .plotly { touch-action: pan-y !important; }
 
 /* —— Tablet+ —— */
 @media (min-width: 768px) {
@@ -240,15 +266,13 @@ div[data-testid="stVerticalBlock"] > div[data-testid="stHorizontalBlock"] .chart
   .section-title { font-size: 1.15rem !important; margin: 1.4rem 0 0.7rem !important; }
   .sidebar-title { font-size: 1.15rem; }
   .chart-wrap { padding: 0.5rem 0.4rem 0.25rem; margin-bottom: 1.1rem; }
+  .chart-head h3 { font-size: 1.15rem !important; }
   .js-plotly-plot .ytick text { font-size: 13px !important; }
-  /* Desktop: modebar volta ao canto superior direito */
   .js-plotly-plot .modebar-container {
+    display: flex !important;
     top: 0 !important;
     bottom: auto !important;
     right: 0 !important;
-  }
-  .js-plotly-plot .gtitle {
-    transform: none !important;
   }
 }
 
@@ -315,6 +339,14 @@ def chart_height(n_cats: int, row_px: int = 26, base: int = 160, lo: int = 380, 
     return max(lo, min(hi, base + n_cats * row_px))
 
 
+def chart_head(title: str, hint: str = "") -> None:
+    hint_html = f"<p>{hint}</p>" if hint else ""
+    st.markdown(
+        f'<div class="chart-head"><h3>{title}</h3>{hint_html}</div>',
+        unsafe_allow_html=True,
+    )
+
+
 def plot_layout(fig: go.Figure, height: int = 480, left: int = 56) -> go.Figure:
     tick = dict(
         family="Roboto, Helvetica, Arial, sans-serif",
@@ -325,24 +357,14 @@ def plot_layout(fig: go.Figure, height: int = 480, left: int = 56) -> go.Figure:
         paper_bgcolor="#FFFFFF",
         plot_bgcolor="#FAFBFC",
         font=dict(family="Roboto, Helvetica, Arial, sans-serif", color="#0B1F33", size=13),
-        margin=dict(l=left, r=36, t=72, b=56),
+        # título fica fora do Plotly (HTML) — margem superior menor
+        margin=dict(l=left, r=24, t=12, b=40),
         height=height,
         autosize=True,
-        legend=dict(
-            orientation="h",
-            yanchor="bottom",
-            y=1.02,
-            x=0,
-            font=dict(size=12, color="#0B1F33"),
-        ),
-        title=dict(
-            font=dict(size=16, color=NAV, family="Roboto, Helvetica, Arial, sans-serif"),
-            x=0.01,
-            xanchor="left",
-            y=0.98,
-            yanchor="top",
-            pad=dict(t=4, b=12),
-        ),
+        dragmode=False,
+        hovermode="closest",
+        showlegend=False,
+        title=None,
     )
     fig.update_xaxes(
         gridcolor="#E8EDF2",
@@ -351,6 +373,7 @@ def plot_layout(fig: go.Figure, height: int = 480, left: int = 56) -> go.Figure:
         tickfont=tick,
         title_font=dict(size=12, color="#334155"),
         color="#0B1F33",
+        fixedrange=True,
     )
     fig.update_yaxes(
         gridcolor="#E8EDF2",
@@ -359,16 +382,37 @@ def plot_layout(fig: go.Figure, height: int = 480, left: int = 56) -> go.Figure:
         tickfont={**tick, "size": 14},
         title_font=dict(size=12, color="#334155"),
         color="#0B1F33",
+        fixedrange=True,
     )
     return fig
 
 
+def top_n_com_demais(df: pd.DataFrame, value_col: str, n: int = 10) -> pd.DataFrame:
+    """Mantém as N maiores barras e agrega o resto em 'Demais' (mais legível no celular)."""
+    if len(df) <= n:
+        return df
+    ordenado = df.sort_values(value_col, ascending=False)
+    top = ordenado.head(n).copy()
+    resto = ordenado.iloc[n:]
+    demais = {
+        "uf": "Demais",
+        "urnas": int(resto["urnas"].sum()) if "urnas" in resto else 0,
+        "estendidas": int(resto["estendidas"].sum()) if "estendidas" in resto else 0,
+        "votos_apos_17h": float(resto["votos_apos_17h"].sum()) if "votos_apos_17h" in resto else 0,
+        "pct": 0.0,
+    }
+    if demais["urnas"]:
+        demais["pct"] = 100 * demais["estendidas"] / demais["urnas"]
+    out = pd.concat([top, pd.DataFrame([demais])], ignore_index=True)
+    return out.sort_values(value_col, ascending=True)
+
+
 PLOT_CFG = {
     "responsive": True,
-    "displayModeBar": True,
+    "displayModeBar": False,
     "displaylogo": False,
-    "modeBarButtonsToRemove": ["lasso2d", "select2d", "autoScale2d"],
-    "toImageButtonOptions": {"format": "png", "filename": "urnas_tardias"},
+    "scrollZoom": False,
+    "doubleClick": False,
 }
 
 
@@ -376,7 +420,7 @@ def main() -> None:
     st.set_page_config(
         page_title="Urnas tardias · 2026",
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="collapsed",
     )
     st.markdown(CSS, unsafe_allow_html=True)
 
@@ -389,6 +433,7 @@ def main() -> None:
   <p class="hero-title">Urnas tardias</p>
   <p class="hero-sub">Votos computados depois das 17h no 2º turno de 2026, nas urnas que encerraram após as 17h45 (horário de Brasília).</p>
 </div>
+<p class="mobile-tip">Para filtrar por estado ou município, toque no ícone <strong>☰</strong> no canto superior esquerdo.</p>
 """,
         unsafe_allow_html=True,
     )
@@ -432,13 +477,18 @@ def main() -> None:
         if so_est:
             base = base[base["classe"] == "estendida"]
 
-        if st.button("Recarregar CSVs"):
-            load_secoes.clear()
-            load_municipios.clear()
-            st.rerun()
+        mostrar_todas_ufs = st.checkbox(
+            "Gráfico com todas as UFs",
+            value=False,
+            help="No celular, o padrão mostra só o Top 10 + Demais.",
+        )
 
-        st.markdown("---")
-        st.caption(f"{SECOES.name}: {fmt_int(len(secoes))} seções · {len(ufs)} UFs")
+        with st.expander("Avançado"):
+            if st.button("Recarregar CSVs"):
+                load_secoes.clear()
+                load_municipios.clear()
+                st.rerun()
+            st.caption(f"{SECOES.name}: {fmt_int(len(secoes))} seções · {len(ufs)} UFs")
 
     if base.empty:
         st.warning("Nenhuma seção com esses filtros.")
@@ -479,9 +529,16 @@ def main() -> None:
     )
     v17 = est.groupby("uf", as_index=False)["votos_apos_17h"].sum()
     por_uf = por_uf.merge(v17, on="uf", how="left").fillna({"votos_apos_17h": 0})
-    por_uf["pct"] = 100 * por_uf["estendidas"] / por_uf["urnas"]
-    por_uf = por_uf.sort_values("estendidas", ascending=True)
+    por_uf["pct"] = 100 * por_uf["estendidas"] / por_uf["urnas"].clip(lower=1)
+    if not mostrar_todas_ufs:
+        por_uf = top_n_com_demais(por_uf, "estendidas", n=10)
+    else:
+        por_uf = por_uf.sort_values("estendidas", ascending=True)
 
+    chart_head(
+        "Urnas estendidas por UF",
+        "Toque numa barra para ver o detalhe. No menu ☰ dá para filtrar estados.",
+    )
     fig_uf = go.Figure()
     fig_uf.add_trace(
         go.Bar(
@@ -491,34 +548,37 @@ def main() -> None:
             name="Urnas estendidas",
             marker_color=PRIMARY,
             text=por_uf["estendidas"].map(fmt_int),
-            textposition="outside",
+            textposition="auto",
             cliponaxis=False,
-            hovertemplate="%{y}: %{x:,} estendidas<br>%{customdata[0]:.1f}% das urnas<br>%{customdata[1]:,.0f} votos >17h<extra></extra>",
+            hovertemplate="<b>%{y}</b><br>%{x:,} estendidas<br>%{customdata[0]:.1f}% das urnas<br>%{customdata[1]:,.0f} votos >17h<extra></extra>",
             customdata=por_uf[["pct", "votos_apos_17h"]],
         )
     )
-    fig_uf.update_layout(title="Urnas estendidas por UF", xaxis_title="", yaxis_title="")
+    fig_uf.update_layout(xaxis_title="", yaxis_title="")
     fig_uf.update_yaxes(
-        tickfont=dict(family="Roboto, Helvetica, Arial, sans-serif", size=15, color="#000000"),
+        tickfont=dict(family="Roboto, Helvetica, Arial, sans-serif", size=14, color="#000000"),
         automargin=True,
     )
-    h_uf = chart_height(len(por_uf), row_px=28, base=180, lo=420, hi=900)
+    h_uf = chart_height(len(por_uf), row_px=36, base=120, lo=360, hi=900)
     st.plotly_chart(
-        plot_layout(fig_uf, height=h_uf, left=72),
+        plot_layout(fig_uf, height=h_uf, left=56),
         use_container_width=True,
         config=PLOT_CFG,
     )
 
     if not est.empty and "encerramento_brt_h" in est.columns:
+        chart_head(
+            "Horário de encerramento",
+            "Só urnas estendidas. A linha marca 17h45 (Brasília).",
+        )
         fig_h = px.histogram(
             est,
             x="encerramento_brt_h",
-            nbins=36,
+            nbins=24,
             color_discrete_sequence=[ACCENT],
         )
         fig_h.update_traces(hovertemplate="Encerramento %{x:.2f}h<br>%{y} urnas<extra></extra>")
         fig_h.update_layout(
-            title="Horário de encerramento (urnas estendidas)",
             xaxis_title="Hora (Brasília)",
             yaxis_title="Urnas",
             showlegend=False,
@@ -529,9 +589,10 @@ def main() -> None:
             line_color=PRIMARY,
             annotation_text="17h45",
             annotation_font_color=PRIMARY,
+            annotation_position="top",
         )
         st.plotly_chart(
-            plot_layout(fig_h, height=480, left=56),
+            plot_layout(fig_h, height=320, left=48),
             use_container_width=True,
             config=PLOT_CFG,
         )
@@ -564,45 +625,60 @@ def main() -> None:
         # se filtro só estendidas na sidebar, municipios.csv já é só com est>0
         pass
 
-    top = mun_view.sort_values("votos_apos_17h_nas_estendidas", ascending=False).head(15)
+    top = mun_view.sort_values("votos_apos_17h_nas_estendidas", ascending=False).head(10)
     if not top.empty:
-        fig_m = px.bar(
-            top.sort_values("votos_apos_17h_nas_estendidas"),
-            x="votos_apos_17h_nas_estendidas",
-            y="municipio",
-            color="uf",
-            orientation="h",
-            color_discrete_sequence=CHART_PALETTE,
-            labels={"votos_apos_17h_nas_estendidas": "Votos após 17h", "municipio": ""},
+        chart_head(
+            "Top 10 municípios — votos após 17h",
+            "Nas urnas estendidas. Deslize a tabela abaixo para ver mais.",
         )
-        fig_m.update_layout(title="Top 15 municípios por votos após 17h (urnas estendidas)")
+        plot_df = top.sort_values("votos_apos_17h_nas_estendidas").copy()
+        # rótulos curtos no eixo (melhor no celular)
+        plot_df["rotulo"] = plot_df.apply(
+            lambda r: f"{r['municipio'][:18]}…" if len(str(r["municipio"])) > 18 else r["municipio"],
+            axis=1,
+        )
+        plot_df["rotulo"] = plot_df["uf"] + " · " + plot_df["rotulo"]
+        fig_m = px.bar(
+            plot_df,
+            x="votos_apos_17h_nas_estendidas",
+            y="rotulo",
+            orientation="h",
+            color_discrete_sequence=[PRIMARY],
+            labels={"votos_apos_17h_nas_estendidas": "Votos após 17h", "rotulo": ""},
+        )
+        fig_m.update_traces(
+            text=plot_df["votos_apos_17h_nas_estendidas"].map(fmt_int),
+            textposition="auto",
+            hovertemplate="<b>%{y}</b><br>%{x:,} votos após 17h<extra></extra>",
+        )
         fig_m.update_yaxes(
-            tickfont=dict(family="Roboto, Helvetica, Arial, sans-serif", size=13, color="#000000"),
+            tickfont=dict(family="Roboto, Helvetica, Arial, sans-serif", size=12, color="#000000"),
             automargin=True,
         )
-        h_m = chart_height(len(top), row_px=32, base=160, lo=460, hi=640)
+        h_m = chart_height(len(top), row_px=38, base=100, lo=380, hi=560)
         st.plotly_chart(
-            plot_layout(fig_m, height=h_m, left=140),
+            plot_layout(fig_m, height=h_m, left=8),
             use_container_width=True,
             config=PLOT_CFG,
         )
 
-        st.dataframe(
-            mun_view.sort_values("votos_apos_17h_nas_estendidas", ascending=False).rename(
-                columns={
-                    "uf": "UF",
-                    "municipio": "Município",
-                    "urnas": "Urnas",
-                    "estendidas": "Estendidas",
-                    "pct_estendidas": "% est.",
-                    "estendidas_com_voto_apos_17h": "Est. c/ voto >17h",
-                    "votos_apos_17h_nas_estendidas": "Votos >17h",
-                }
-            ),
-            use_container_width=True,
-            hide_index=True,
-            height=320,
-        )
+        with st.expander("Tabela de municípios", expanded=False):
+            st.dataframe(
+                mun_view.sort_values("votos_apos_17h_nas_estendidas", ascending=False).rename(
+                    columns={
+                        "uf": "UF",
+                        "municipio": "Município",
+                        "urnas": "Urnas",
+                        "estendidas": "Estendidas",
+                        "pct_estendidas": "% est.",
+                        "estendidas_com_voto_apos_17h": "Est. c/ voto >17h",
+                        "votos_apos_17h_nas_estendidas": "Votos >17h",
+                    }
+                ),
+                use_container_width=True,
+                hide_index=True,
+                height=280,
+            )
 
     with st.expander("Seções (detalhe)"):
         cols = [
